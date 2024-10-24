@@ -3,7 +3,7 @@ const router = express.Router();
 
 const users = require("../data/users");
 const error = require("../utilities/error");
-
+const comments = require("../data/comments");
 router
   .route("/")
   .get((req, res) => {
@@ -80,5 +80,36 @@ router
     if (user) res.json(user);
     else next();
   });
+
+// GET /users/:id/comments
+// Retrieves comments made by the user with the specified id.
+
+router.get("/:userId/comments", (req, res, next) => {
+  const { userId } = req.params;  // Capture the post id from the URL
+  const { postId } = req.query;
+  let postComments = {};
+  // Filter comments by postId
+  if (postId) {
+    postComments = comments.filter(comment => comment.userId == userId && comment.postId == postId);
+    if (postComments.length > 0) {
+      res.json({ "specific userId and postId comments:": postComments });
+    } else {
+      next(error(404, `No comments found for user ID ${userId} and post ID ${postId}`));
+    }
+
+  } else {
+    postComments = comments.filter(comment => comment.userId == userId);
+
+    if (postComments.length > 0) {
+      res.json({ "userId comments": postComments });
+    } else {
+      next(error(404, `No comments found for post ID ${id}`));  // Return 404 if no comments found
+    }
+  }
+
+
+});
+
+
 
 module.exports = router;
